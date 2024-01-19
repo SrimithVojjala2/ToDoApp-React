@@ -24,7 +24,9 @@ const Styles = {
     BtnAdd:{
         display:"flex",
         marginTop: '20px',
-        marginRight: '20px'
+        marginRight: '20px',
+        alignItems:'center',
+        justifyContent: 'flex-end'
     },
     TableHead:{
         backgroundColor: 'steelblue',

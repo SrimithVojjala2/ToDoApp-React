@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
 import { Component } from "react";
@@ -12,7 +13,10 @@ import {
   DialogActions,
   DialogContentText,
   TextField,
+  Typography,
 } from "@mui/material";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MarkunreadIcon from "@mui/icons-material/Markunread";
@@ -26,15 +30,21 @@ class ToDo extends Component {
       openDeleteDialog: false,
       openEditDialog: false,
       updateEditvalue: "",
+      hoverPin: false,
+      pinValue: false,
     };
   }
   componentDidMount() {
     this.setState({ updateEditvalue: this.props.row.description });
   }
+
   handleCheckboxChange = () => {
-    this.setState((prevState) => ({
-      checked: !prevState.checked,
-    }));
+    this.setState(
+      (prevState) => ({
+        checked: !prevState.checked,
+      }),
+      () => console.log(this.state.checked)
+    );
   };
 
   handleClose = () => {
@@ -51,35 +61,73 @@ class ToDo extends Component {
     this.handleClose();
   };
 
-  render() {
-    const { row,index } = this.props;
-    const { checked } = this.state;
-    const activeClass = { textDecoration: checked ? "line-through" : "none" };
+  handlePinChange = () => {
+    this.props.handlePinChange(this.props.row.id, this.props.index);
+    this.setState((prev) => ({ pinValue: !prev.pinValue }));
+  };
 
+  render() {
+    const { row, index,onChecked } = this.props;
+    const { checked, hoverPin, pinValue } = this.state;
+    const activeClass = { textDecoration: checked ? "line-through" : "none" };
+    const Pin = { display: hoverPin ? "block" : "none" };
+    const hoverId = { display: !hoverPin ? "block" : "none" };
     return (
       <>
-        <Draggable key={row.id} draggableId={row.description} index={index}>
+        <Draggable
+          key={row.id}
+          draggableId={row.description}
+          index={index}
+          isDragDisabled={pinValue}
+        >
           {(dragProvider) => (
             <TableRow
               key={row.id}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              style={{ ...activeClass }}
               {...dragProvider.draggableProps}
-              {...dragProvider.dragHandleProps} // Exclude this line to remove the drag handle
+              {...dragProvider.dragHandleProps}
               ref={dragProvider.innerRef}
             >
+              <TableCell>
+                <Checkbox
+                  checked={row.completed}
+                  onChange={() => onChecked(index)}
+                />
+              </TableCell>
               <TableCell
                 component="th"
                 scope="row"
                 align="center"
-                width={"20px"}
+                width={"60px"}
+                onMouseOver={() => this.setState({ hoverPin: true })}
+                onMouseOut={() => this.setState({ hoverPin: false })}
+                style={{ ...activeClass }}
               >
-                {row.id}
+                <Typography variant="body1" style={{ ...hoverId }}>
+                  {row.id}
+                </Typography>
+                <Checkbox
+                  icon={
+                    <PushPinOutlinedIcon
+                      style={{ transform: "rotate(50deg)" }}
+                    />
+                  }
+                  checkedIcon={
+                    <PushPinIcon
+                      style={{ color: "steelblue", transform: "rotate(50deg)" }}
+                    />
+                  }
+                  checked={pinValue}
+                  style={{ ...Pin, padding: "0", alignItems: "center" }}
+                  onChange={this.handlePinChange}
+                />
               </TableCell>
-              <TableCell style={{ paddingLeft: "15px" }}>
+              <TableCell style={{ paddingLeft: "15px", ...activeClass }}>
                 {row.description}
               </TableCell>
-              <TableCell align="right">{row.progress}</TableCell>
+              <TableCell align="right" style={{ ...activeClass }}>
+                {row.progress}
+              </TableCell>
               <TableCell align="center">
                 <Button
                   style={{ color: "steelblue" }}
@@ -93,69 +141,77 @@ class ToDo extends Component {
                 >
                   <DeleteIcon />
                 </Button>
-                <Dialog
-                  open={this.state.openDeleteDialog}
-                  onClose={this.handleClose}
-                >
-                  <DialogContent>
-                    <DialogContentText>
-                      Are you sure want to Delete?
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      variant="contained"
-                      style={{ backgroundColor: "steelblue" }}
-                      onClick={() => this.handleClose()}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      style={{ backgroundColor: "steelblue" }}
-                      onClick={() => this.handleDelete()}
-                    >
-                      Delete
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-                <Dialog
-                  open={this.state.openEditDialog}
-                  onClose={this.handleClose}
-                >
-                  <DialogContent>
-                    <DialogContentText>Edit the Task Details</DialogContentText>
-                    <TextField
-                      autoFocus
-                      required
-                      margin="dense"
-                      id="editValue"
-                      type="text"
-                      value={this.state.updateEditvalue}
-                      onChange={(e) =>
-                        this.setState({ updateEditvalue: e.target.value })
-                      }
-                      style={{ width: "400px" }}
-                      variant="standard"
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      variant="contained"
-                      style={{ backgroundColor: "steelblue" }}
-                      onClick={() => this.handleClose()}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      style={{ backgroundColor: "steelblue" }}
-                      onClick={() => this.handleEditClick()}
-                    >
-                      Add
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+
+                <div className="Delete-Dialog">
+                  <Dialog
+                    open={this.state.openDeleteDialog}
+                    onClose={this.handleClose}
+                  >
+                    <DialogContent>
+                      <DialogContentText>
+                        Are you sure want to Delete?
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        variant="contained"
+                        style={{ backgroundColor: "steelblue" }}
+                        onClick={() => this.handleClose()}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        style={{ backgroundColor: "steelblue" }}
+                        onClick={() => this.handleDelete()}
+                      >
+                        Delete
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </div>
+
+                <div className="Edit-Dialog">
+                  <Dialog
+                    open={this.state.openEditDialog}
+                    onClose={this.handleClose}
+                  >
+                    <DialogContent>
+                      <DialogContentText>
+                        Edit the Task Details
+                      </DialogContentText>
+                      <TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="editValue"
+                        type="text"
+                        value={this.state.updateEditvalue}
+                        onChange={(e) =>
+                          this.setState({ updateEditvalue: e.target.value })
+                        }
+                        style={{ width: "400px" }}
+                        variant="standard"
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        variant="contained"
+                        style={{ backgroundColor: "steelblue" }}
+                        onClick={() => this.handleClose()}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        style={{ backgroundColor: "steelblue" }}
+                        onClick={() => this.handleEditClick()}
+                      >
+                        Add
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </div>
               </TableCell>
               <TableCell
                 align="left"
