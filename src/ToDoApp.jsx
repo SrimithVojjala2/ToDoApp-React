@@ -28,6 +28,7 @@ import { withStyles } from "@mui/styles";
 import Styles from "./ToDoAppStyles";
 import AddIcon from "@mui/icons-material/Add";
 import ToDo from "./ToDo";
+import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 
 class ToDoApp extends Component {
   constructor(props) {
@@ -59,6 +60,14 @@ class ToDoApp extends Component {
     );
     this.setState({ToDos: updatedToDos})
   }
+
+  handleDragEnd = (e) => {
+    if (!e.destination) return;
+    let tempData = this.state.ToDos;
+    let [source_data] = tempData.splice(e.source.index, 1);
+    tempData.splice(e.destination.index, 0, source_data);
+    this.setState({ToDos:tempData});
+  };
 
   addToDo = (taskValue) => {
     this.setState((prev) => ({
@@ -99,7 +108,8 @@ class ToDoApp extends Component {
           handleCloseToDo={this.handleCloseToDo}
           addToDo={this.addToDo}
           handleDelete={this.handleDelete}
-          handleEdit = {this.handleEdit}
+          handleEdit={this.handleEdit}
+          handleDragEnd={this.handleDragEnd}
         />
       </>
     );
@@ -128,7 +138,8 @@ const Body = ({
   handleCloseToDo,
   addToDo,
   handleDelete,
-  handleEdit
+  handleEdit,
+  handleDragEnd,
 }) => {
   const handleOpen = () => {
     handleOpenToDo();
@@ -180,7 +191,8 @@ const Body = ({
             classes={classes}
             ToDos={ToDos}
             handleDelete={handleDelete}
-            handleEdit = {handleEdit}
+            handleEdit={handleEdit}
+            handleDragEnd={handleDragEnd}
           />
         </Box>
       </Container>
@@ -188,52 +200,69 @@ const Body = ({
   );
 };
 
-const TableView = ({ classes, ToDos, handleDelete ,handleEdit}) => {
+const TableView = ({ classes, ToDos, handleDelete ,handleEdit,handleDragEnd}) => {
+  const handleDragEndClick = (e) => {
+    handleDragEnd(e)
+  }
   return (
     <>
       <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead className={classes.TableHead}>
-            <TableRow>
-              <TableCell align="center" style={{ color: "white" }} width={'20px'}>
-                Id
-              </TableCell>
-              <TableCell style={{ color: "white",paddingLeft:'15px' }} > ToDo</TableCell>
-              <TableCell
-                style={{ color: "white" }}
-                align="right"
-                width={"50px"}
-              >
-                Progress
-              </TableCell>
-              <TableCell
-                style={{ color: "white" }}
-                align="center"
-                width={"200px"}
-              >
-                Edit / Remove
-              </TableCell>
-              <TableCell
-                style={{ color: "white" }}
-                align="left"
-                width={"120px"}
-              >
-                Mark as Read
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {ToDos.map((row, index) => (
-              <ToDo
-                row={row}
-                key={row.id}
-                index={index}
-                handleDelete={handleDelete}
-                handleEdit = {handleEdit}
-              />
-            ))}
-          </TableBody>
-        </Table>
+        <DragDropContext onDragEnd={handleDragEndClick}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead className={classes.TableHead}>
+              <TableRow>
+                <TableCell
+                  align="center"
+                  style={{ color: "white" }}
+                  width={"20px"}
+                >
+                  Id
+                </TableCell>
+                <TableCell style={{ color: "white", paddingLeft: "15px" }}>
+                  {" "}
+                  ToDo
+                </TableCell>
+                <TableCell
+                  style={{ color: "white" }}
+                  align="right"
+                  width={"50px"}
+                >
+                  Progress
+                </TableCell>
+                <TableCell
+                  style={{ color: "white" }}
+                  align="center"
+                  width={"200px"}
+                >
+                  Edit / Remove
+                </TableCell>
+                <TableCell
+                  style={{ color: "white" }}
+                  align="left"
+                  width={"120px"}
+                >
+                  Mark as Read
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <Droppable droppableId="droppable-1">
+              {(provider) => (
+                <TableBody ref={provider.innerRef} {...provider.droppableProps}>
+                  {ToDos.map((row, index) => (
+                    <ToDo
+                      row={row}
+                      key={row.id}
+                      index={index}
+                      handleDelete={handleDelete}
+                      handleEdit={handleEdit}
+                    />
+                  ))}
+                  {provider.placeholder}
+                </TableBody>
+              )}
+            </Droppable>
+          </Table>
+        </DragDropContext>
       </TableContainer>
     </>
   );
