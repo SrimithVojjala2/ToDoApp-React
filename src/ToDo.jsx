@@ -92,6 +92,7 @@ class ToDo extends Component {
                 <Checkbox
                   checked={row.completed}
                   onChange={() => onChecked(index)}
+                  style={{padding:'0',margin:'0'}}
                 />
               </TableCell>
               <TableCell

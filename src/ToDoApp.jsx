@@ -3,35 +3,16 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Component } from "react";
 import {
-  AppBar,
   Box,
   CssBaseline,
   Typography,
-  Toolbar,
-  Container,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  DialogTitle,
-  DialogContentText,
-  DialogContent,
-  DialogActions,
-  Dialog,
-  TextField,
-  Checkbox,
+  Alert,
+  Popover
 } from "@mui/material";
 import { withStyles } from "@mui/styles";
 import Styles from "./ToDoAppStyles";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ToDo from "./ToDo";
-import { DragDropContext, Droppable } from "@hello-pangea/dnd";
-
+import Body from './components/Body'
+import HeaderBar from "./components/Header";
 class ToDoApp extends Component {
   constructor(props) {
     super(props);
@@ -41,6 +22,7 @@ class ToDoApp extends Component {
       openAddToDo: false,
       id: 1,
       allSelectValue: false,
+      anchorEl: null,
     };
   }
   handleOpenToDo = () => {
@@ -72,8 +54,16 @@ class ToDoApp extends Component {
       const updatedToDos = this.state.ToDos.filter(
         (todo) => todo.completed === false
       );
-      console.log(updatedToDos);
+      this.setState({ ToDos: updatedToDos });
+      this.setState({ allSelectValue: false });
+    } else {
+      this.setState({ allSelectValue: false });
+      this.setState({ anchorEl: document.body });
     }
+  };
+
+  handleClosePopover = () => {
+    this.setState({ anchorEl: null });
   };
 
   handleCheckbox = (Index) => {
@@ -84,10 +74,19 @@ class ToDoApp extends Component {
   };
 
   handleAllCheckbox = () => {
-    const updatedRows = this.state.ToDos.map((row) => ({
-      ...row,
-      completed: !row.completed,
-    }));
+    const updatedRows = this.state.ToDos.map((row) => {
+      if (this.state.allSelectValue !== true) {
+        return {
+          ...row,
+          completed: true,
+        };
+      } else {
+        return {
+          ...row,
+          completed: false,
+        };
+      }
+    });
     this.setState({ ToDos: updatedRows });
   };
 
@@ -96,7 +95,7 @@ class ToDoApp extends Component {
       (prev) => ({
         allSelectValue: !prev.allSelectValue,
       }),
-      this.handleAllCheckbox
+      this.handleAllCheckbox()
     );
   };
 
@@ -141,6 +140,7 @@ class ToDoApp extends Component {
   render() {
     const { classes } = this.props;
     const AllStates = { ...this.state };
+    const isPopoverOpen = Boolean(this.state.anchorEl);
     return (
       <>
         <CssBaseline />
@@ -154,6 +154,25 @@ class ToDoApp extends Component {
         >
           TODO LIST, ADD NEW TODO
         </Typography>
+        <Popover
+          open={isPopoverOpen}
+          anchorEl={this.state.anchorEl}
+          onClose={this.handleClosePopover}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
+          <Box p={2}>
+            <Alert severity="error">
+              No Todos available!
+            </Alert>
+          </Box>
+        </Popover>
         <Body
           classes={classes}
           {...AllStates}
@@ -166,202 +185,14 @@ class ToDoApp extends Component {
           handlePinChange={this.handlePinChange}
           handleAllSelectValue={this.handleAllSelectValue}
           handleCheckbox={this.handleCheckbox}
-          handleDeleteCheckBox = {this.handleDeleteCheckBox}
+          handleDeleteCheckBox={this.handleDeleteCheckBox}
+          activeDelete={this.activeDelete}
         />
-        <pre>{JSON.stringify(this.state.ToDos, null, 2)}</pre>
       </>
     );
   }
 }
 
-const HeaderBar = ({ classes }) => (
-  <Box>
-    <AppBar
-      component="nav"
-      position="relative"
-      style={{ backgroundColor: "steelblue" }}
-    >
-      <Toolbar className={classes.title}>
-        <Typography variant="h5">ToDo App</Typography>
-      </Toolbar>
-    </AppBar>
-  </Box>
-);
 
-const Body = ({
-  classes,
-  ToDos,
-  openAddToDo,
-  handleOpenToDo,
-  handleCloseToDo,
-  addToDo,
-  handleDelete,
-  handleEdit,
-  handleDragEnd,
-  handlePinChange,
-  handleAllSelectValue,
-  handleCheckbox,
-  handleDeleteCheckBox
-}) => {
-  const handleOpen = () => {
-    handleOpenToDo();
-  };
-  const handleClose = () => {
-    handleCloseToDo();
-  };
-  const handleaddToDo = () => {
-    const taskValue = document.getElementById("taskValue").value;
-    addToDo(taskValue);
-    document.getElementById("taskValue").value = "";
-    handleCloseToDo();
-  };
-  const handleDeleteCheckBoxClick = () =>{ handleDeleteCheckBox()};
-  return (
-    <>
-      <Container className={classes.BodyContainer}>
-        <Box className={classes.BtnAdd}>
-          <Button
-            variant="contained"
-            startIcon={<DeleteIcon />}
-            style={{ backgroundColor: "steelblue" }}
-            onClick={() => handleDeleteCheckBoxClick()}
-          >
-            Delete
-          </Button>
-          <Button
-            variant="contained"
-            style={{ backgroundColor: "steelblue", marginLeft: "10px" }}
-            startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
-          >
-            Add new Todo
-          </Button>
-          <Dialog open={openAddToDo} onClose={handleClose}>
-            <DialogTitle>ToDo</DialogTitle>
-            <DialogContent>
-              <DialogContentText>Enter ToDo Task</DialogContentText>
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="taskValue"
-                label="Enter Task Details"
-                type="text"
-                style={{ width: "400px" }}
-                variant="standard"
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => handleClose()}>Cancel</Button>
-              <Button onClick={() => handleaddToDo()}>Add</Button>
-            </DialogActions>
-          </Dialog>
-        </Box>
-        <Box display={"flex"}>
-          <TableView
-            classes={classes}
-            ToDos={ToDos}
-            handleDelete={handleDelete}
-            handleEdit={handleEdit}
-            handleDragEnd={handleDragEnd}
-            handlePinChange={handlePinChange}
-            handleAllSelectValue={handleAllSelectValue}
-            handleCheckbox={handleCheckbox}
-          />
-        </Box>
-      </Container>
-    </>
-  );
-};
-
-const TableView = ({
-  classes,
-  handleCheckbox,
-  allSelectValue,
-  handleAllSelectValue,
-  ToDos,
-  handlePinChange,
-  handleDelete,
-  handleEdit,
-  handleDragEnd,
-}) => {
-  const handleDragEndClick = (e) => {
-    handleDragEnd(e);
-  };
-  const handleAllSelectValueClick = () => {
-    handleAllSelectValue();
-  };
-  return (
-    <>
-      <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-        <DragDropContext onDragEnd={handleDragEndClick}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead className={classes.TableHead}>
-              <TableRow>
-                <TableCell width={"20px"} style={{ padding: "0px" }}>
-                  <Checkbox
-                    checked={allSelectValue}
-                    onChange={handleAllSelectValueClick}
-                    style={{ color: "white" }}
-                  />
-                </TableCell>
-                <TableCell
-                  align="center"
-                  style={{ color: "white", margin: "0" }}
-                  width={"60px"}
-                >
-                  Id
-                </TableCell>
-                <TableCell style={{ color: "white", paddingLeft: "15px" }}>
-                  {" "}
-                  ToDo
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="right"
-                  width={"50px"}
-                >
-                  Progress
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="center"
-                  width={"200px"}
-                >
-                  Edit / Remove
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="left"
-                  width={"150px"}
-                >
-                  Mark as Complete
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <Droppable droppableId="droppable-1">
-              {(provider) => (
-                <TableBody ref={provider.innerRef} {...provider.droppableProps}>
-                  {ToDos.map((row, index) => (
-                    <ToDo
-                      row={row}
-                      key={row.id}
-                      index={index}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                      handlePinChange={handlePinChange}
-                      onChecked={handleCheckbox}
-                    />
-                  ))}
-                  {provider.placeholder}
-                </TableBody>
-              )}
-            </Droppable>
-          </Table>
-        </DragDropContext>
-      </TableContainer>
-    </>
-  );
-};
 
 export default withStyles(Styles)(ToDoApp);
