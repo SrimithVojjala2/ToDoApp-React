@@ -1,4 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react/prop-types */
+import React, { Component } from 'react';
 import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import ToDo from "../ToDo";
 import {
@@ -12,97 +15,100 @@ import {
   Checkbox,
 } from "@mui/material";
 import Styles from "../ToDoAppStyles";
-import {withStyles} from "@mui/styles";
+import { withStyles } from "@mui/styles";
 
-const TableApp = ({
-  classes,
-  handleCheckbox,
-  allSelectValue,
-  handleAllSelectValue,
-  ToDos,
-  handlePinChange,
-  handleDelete,
-  handleEdit,
-  handleDragEnd,
-}) => {
-  const handleDragEndClick = (e) => {
-    handleDragEnd(e);
+class TableView extends Component {
+  handleDragEndClick = (e) => {
+    this.props.handleDragEnd(e);
   };
-  const handleAllSelectValueClick = () => {
-    handleAllSelectValue();
+
+  handleAllSelectValueClick = () => {
+    this.props.handleAllSelectValue();
   };
-  return (
-    <>
-      <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-        <DragDropContext onDragEnd={handleDragEndClick}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead className={classes.TableHead}>
-              <TableRow>
-                <TableCell width={"35px"} style={{ padding: "0px"}}>
-                  <Checkbox
-                    checked={allSelectValue}
-                    onChange={handleAllSelectValueClick}
-                    style={{ color: "white",marginLeft:'8px' }}
-                  />
-                </TableCell>
-                <TableCell
-                  align="center"
-                  style={{ color: "white", margin: "0"}}
-                  width={"65px"}
-                >
-                  <div>Id</div>
-                </TableCell>
-                <TableCell style={{ color: "white", paddingLeft: "15px" }}>
-                  {" "}
-                  ToDo
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="right"
-                  width={"50px"}
-                >
-                  Progress
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="center"
-                  width={"200px"}
-                >
-                  Edit / Remove
-                </TableCell>
-                <TableCell
-                  style={{ color: "white" }}
-                  align="left"
-                  width={"150px"}
-                >
-                  Mark as Complete
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <Droppable droppableId="droppable-1">
-              {(provider) => (
-                <TableBody ref={provider.innerRef} {...provider.droppableProps}>
-                  {ToDos.map((row, index) => (
-                    <ToDo
-                      row={row}
-                      key={row.id}
-                      index={index}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                      handlePinChange={handlePinChange}
-                      onChecked={handleCheckbox}
+
+  render() {
+    const {
+      classes,
+      handleCheckbox,
+      allSelectValue,
+      ToDos,
+      handlePinChange,
+      handleDelete,
+      handleEdit,
+    } = this.props;
+
+    return (
+      <>
+        <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+          <DragDropContext onDragEnd={this.handleDragEndClick}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead className={classes.TableHead}>
+                <TableRow>
+                  <TableCell width={"35px"} style={{ padding: "0px"}}>
+                    <Checkbox
+                      checked={allSelectValue}
+                      onChange={this.handleAllSelectValueClick}
+                      style={{ color: "white", marginLeft:'8px' }}
                     />
-                  ))}
-                  {provider.placeholder}
-                </TableBody>
-              )}
-            </Droppable>
-          </Table>
-        </DragDropContext>
-      </TableContainer>
-    </>
-  );
-};
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    style={{ color: "white", margin: "0"}}
+                    width={"65px"}
+                  >
+                    <div>Id</div>
+                  </TableCell>
+                  <TableCell style={{ color: "white", paddingLeft: "15px" }}>
+                    {" "}
+                    ToDo
+                  </TableCell>
+                  <TableCell
+                    style={{ color: "white" }}
+                    align="right"
+                    width={"50px"}
+                  >
+                    Progress
+                  </TableCell>
+                  <TableCell
+                    style={{ color: "white" }}
+                    align="center"
+                    width={"200px"}
+                  >
+                    Edit / Remove
+                  </TableCell>
+                  <TableCell
+                    style={{ color: "white" }}
+                    align="left"
+                    width={"150px"}
+                  >
+                    Mark as Complete
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <Droppable droppableId="droppable-1">
+                {(provider) => (
+                  <TableBody ref={provider.innerRef} {...provider.droppableProps}>
+                    {ToDos.map((row, index) => (
+                      <ToDo
+                        row={row}
+                        key={row.id}
+                        index={index}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                        handlePinChange={handlePinChange}
+                        onChecked={handleCheckbox}
+                      />
+                    ))}
+                    {provider.placeholder}
+                  </TableBody>
+                )}
+              </Droppable>
+            </Table>
+          </DragDropContext>
+        </TableContainer>
+      </>
+    );
+  }
+}
 
-const TableView = withStyles(Styles)(TableApp);
-export default TableView;
+export default withStyles(Styles)(TableView);

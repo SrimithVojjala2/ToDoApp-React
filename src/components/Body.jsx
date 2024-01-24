@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
+import React, { Component } from 'react';
 import {
   Button,
   Container,
@@ -16,70 +18,70 @@ import TableApp from "./TableView";
 import Styles from "../ToDoAppStyles";
 import { withStyles } from "@mui/styles";
 
-const BodyView = ({
-  classes,
-  ToDos,
-  openAddToDo,
-  handleOpenToDo,
-  handleCloseToDo,
-  addToDo,
-  handleDelete,
-  handleEdit,
-  handleDragEnd,
-  handlePinChange,
-  handleAllSelectValue,
-  handleCheckbox,
-  handleDeleteCheckBox,
-  activeDelete,
-  allSelectValue,
-}) => {
-  const handleOpen = () => {
-    handleOpenToDo();
+class Body extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      taskValue: "",
+    };
+  }
+
+  handleOpen = () => {
+    this.props.handleOpenToDo();
   };
-  const handleClose = () => {
-    handleCloseToDo();
+
+  handleClose = () => {
+    this.props.handleCloseToDo();
   };
-  const handleaddToDo = () => {
-    const taskValue = document.getElementById("taskValue").value;
-    addToDo(taskValue);
-    document.getElementById("taskValue").value = "";
-    handleCloseToDo();
+
+  handleaddToDo = () => {
+    const { addToDo } = this.props;
+    addToDo(this.state.taskValue);
+    this.setState({ taskValue: "" });
+    this.handleClose();
   };
-  const handleDeleteCheckBoxClick = () => {
-    handleDeleteCheckBox();
+
+  handleDeleteCheckBoxClick = () => {
+    this.props.handleDeleteCheckBox();
   };
-  const DeleteButton = () => {
-    if (activeDelete()) {
-      return (
-        <>
-          <Button
-            variant="contained"
-            startIcon={<DeleteIcon />}
-            style={{ backgroundColor: "steelblue" }}
-            onClick={() => handleDeleteCheckBoxClick()}
-          >
-            Delete
-          </Button>
-        </>
-      );
-    } else {
-      return null;
-    }
-  };
-  return (
-    <>
+
+  render() {
+    const {
+      classes,
+      ToDos,
+      openAddToDo,
+      handleDelete,
+      handleEdit,
+      handleDragEnd,
+      handlePinChange,
+      handleAllSelectValue,
+      handleCheckbox,
+      activeDelete,
+      allSelectValue,
+    } = this.props;
+
+    return (
       <Container className={classes.BodyContainer}>
         <Box className={classes.BtnAdd}>
-          <DeleteButton />
+          {activeDelete() && (
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              style={{ backgroundColor: "steelblue" }}
+              onClick={this.handleDeleteCheckBoxClick}
+            >
+              Delete
+            </Button>
+          )}
           <Button
             variant="contained"
             style={{ backgroundColor: "steelblue", marginLeft: "10px" }}
             startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
+            onClick={this.handleOpen}
           >
             Add new Todo
           </Button>
-          <Dialog open={openAddToDo} onClose={handleClose}>
+          <Dialog open={openAddToDo} onClose={this.handleClose}>
             <DialogTitle>ToDo</DialogTitle>
             <DialogContent>
               <DialogContentText>Enter ToDo Task</DialogContentText>
@@ -92,11 +94,13 @@ const BodyView = ({
                 type="text"
                 style={{ width: "400px" }}
                 variant="standard"
+                value={this.state.taskValue}
+                onChange={(e) => this.setState({ taskValue: e.target.value })}
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => handleClose()}>Cancel</Button>
-              <Button onClick={() => handleaddToDo()}>Add</Button>
+              <Button onClick={this.handleClose}>Cancel</Button>
+              <Button onClick={this.handleaddToDo}>Add</Button>
             </DialogActions>
           </Dialog>
         </Box>
@@ -114,9 +118,8 @@ const BodyView = ({
           />
         </Box>
       </Container>
-    </>
-  );
-};
+    );
+  }
+}
 
-const Body = withStyles(Styles)(BodyView)
-export default Body;
+export default withStyles(Styles)(Body);
